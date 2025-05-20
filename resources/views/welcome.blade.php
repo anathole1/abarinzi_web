@@ -91,7 +91,77 @@
         <!-- Main Content Area -->
         <main class="flex-grow">
             <!-- About Us Section -->
-            @if($aboutContent)
+            <!-- In resources/views/welcome.blade.php -->
+@if($aboutContent)
+<section id="about" class="py-16 lg:py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12 lg:mb-16">
+            <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl lg:text-5xl mb-4">
+                {{ $aboutContent->page_main_title ?? 'About Abarinzi Family' }}
+            </h2>
+            @if($aboutContent->page_main_subtitle)
+            <div class="w-24 h-1 bg-blue-600 mx-auto mb-6"></div>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600 leading-relaxed">
+                {{ $aboutContent->page_main_subtitle }}
+            </p>
+            @endif
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
+            {{-- Left Column: Introduction --}}
+            <div class="space-y-6">
+                <h3 class="text-2xl font-semibold text-gray-800 mb-3">{{ $aboutContent->intro_title ?? 'Introduction' }}</h3>
+                <div class="prose max-w-none text-gray-700 leading-relaxed">
+                    {!! nl2br(e($aboutContent->intro_content)) !!}
+                </div>
+            </div>
+
+            {{-- Right Column: Mission Summary & Link to More --}}
+            <div class="space-y-8">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-blue-700 mb-2">{{ $aboutContent->mission_title ?? 'Mission Statement' }}</h3>
+                    @if($aboutContent->mission_summary)
+                        <p class="text-gray-600 leading-relaxed mb-4">{{ $aboutContent->mission_summary }}</p>
+                    @else
+                        <p class="text-gray-600 leading-relaxed mb-4">{{ Str::limit(strip_tags($aboutContent->mission_content), 200) }}</p>
+                    @endif
+
+                    <h3 class="text-xl font-semibold text-blue-700 mb-2 mt-6">{{ $aboutContent->vision_section_title ?? 'Our Vision' }}</h3>
+                    @if($aboutContent->vision_section_intro_content)
+                         <p class="text-gray-600 leading-relaxed mb-4">{{ Str::limit(strip_tags($aboutContent->vision_section_intro_content), 150) }}</p>
+                    @endif
+
+                    <a href="{{ route('about.work-vision') }}"
+                       class="inline-block mt-4 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-md transition-colors duration-200 text-center w-full sm:w-auto">
+                        Read More: Our Work & Vision
+                    </a>
+                </div>
+
+                {{-- Optional Join Card can still be here --}}
+                @if($aboutContent->join_card_title)
+                <div class="bg-gradient-to-r from-blue-700 to-blue-900 p-6 rounded-lg shadow-xl text-white transform transition-transform duration-300 hover:scale-105">
+                    <h4 class="text-xl font-semibold mb-2">{{ $aboutContent->join_card_title }}</h4>
+                    @if($aboutContent->join_card_text)
+                    <p class="mb-4 text-blue-100">{{ $aboutContent->join_card_text }}</p>
+                    @endif
+                    <a href="{{ route('register') }}" class="block w-full sm:w-auto text-center bg-white text-blue-700 px-4 py-2 rounded-md font-medium hover:bg-blue-50 transition-colors duration-200">
+                        {{ $aboutContent->join_card_button_text ?? 'Register Now' }}
+                    </a>
+                </div>
+                @endif
+            </div>
+        </div>
+
+        {{-- Stats Section (if kept on homepage) --}}
+        @if($aboutContent->stats_items && count($aboutContent->stats_items) > 0)
+        <div class="mt-16 lg:mt-20">
+            {{-- ... your stats display code ... --}}
+        </div>
+        @endif
+    </div>
+</section>
+@endif
+            {{-- @if($aboutContent)
             <section id="about" class="py-20 bg-gray-50">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="text-center mb-16">
@@ -176,7 +246,7 @@
                     <p class="text-gray-600">About Us content is being updated. Please check back soon!</p>
                 </div>
             </section>
-            @endif
+            @endif --}}
 
             <!-- Call to Action / Other Sections -->
             <section class="py-16 bg-blue-700 text-white">

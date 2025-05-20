@@ -13,31 +13,29 @@ return new class extends Migration
     {
         Schema::create('about_contents', function (Blueprint $table) {
             $table->id();
-            $table->string('main_title')->default('About Us');
-            $table->text('main_subtitle')->nullable();
-            $table->string('story_title')->default('Our Story');
-            $table->text('story_paragraph1')->nullable();
-            $table->text('story_paragraph2')->nullable();
-            // Store value props perhaps as JSON, or separate columns if fixed
-            // JSON approach:
-            $table->json('value_cards')->nullable();
-            // Example JSON structure:
-            // [
-            //   {"icon": "connection_icon_svg", "title": "Connection", "description": "..."},
-            //   {"icon": "support_icon_svg", "title": "Support", "description": "..."},
-            //   {"icon": "growth_icon_svg", "title": "Growth", "description": "..."}
-            // ]
-            $table->string('join_title')->default('Become a Member');
-            $table->text('join_text')->nullable();
-            $table->string('join_button_text')->default('Register Now');
-            // Store stats as JSON
-            $table->json('stats')->nullable();
-             // Example JSON structure:
-             // [
-             //   {"value": "100+", "label": "Successful Events"},
-             //   {"value": "500+", "label": "Active Members"},
-             //   ...
-             // ]
+            $table->string('page_main_title')->default('About Abarinzi Family');
+            $table->text('page_main_subtitle')->nullable();
+
+            $table->string('intro_title')->default('Introduction');
+            $table->text('intro_content')->nullable();
+
+            $table->string('mission_title')->default('Mission Statement');
+            $table->text('mission_summary')->nullable(); // Summary for homepage
+            $table->text('mission_content')->nullable();   // Full content for details page
+
+            // Titles for the sections whose items are in separate tables
+            $table->string('core_objectives_section_title')->default('Core Objectives and Activities');
+            $table->string('vision_section_title')->default('Vision for the Future');
+            $table->text('vision_section_intro_content')->nullable(); // Intro para for vision on details page
+
+            $table->text('concluding_statement')->nullable(); // This will be on the "Read More" page
+
+            // Optional: Join Card & Stats (if they remain on the main About section on homepage)
+            $table->string('join_card_title')->nullable();
+            $table->text('join_card_text')->nullable();
+            $table->string('join_card_button_text')->nullable();
+            $table->json('stats_items')->nullable(); // Keep as JSON if simple key-value
+
             $table->timestamps();
         });
     }

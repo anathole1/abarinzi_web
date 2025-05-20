@@ -69,7 +69,7 @@ class HeroSlideController extends Controller {
          $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:6144',
             'cta1_text' => 'nullable|string|max:100',
             'cta1_link' => 'nullable|url|max:255',
             'cta2_text' => 'nullable|string|max:100',

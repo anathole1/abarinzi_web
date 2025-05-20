@@ -14,8 +14,10 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            RolesAndPermissionsSeeder::class, 
-            AboutContentSeeder::class,
+            RolesAndPermissionsSeeder::class,
+            AboutContentSeeder::class,        // Add this
+            CoreObjectiveItemSeeder::class, // Add this
+            VisionItemSeeder::class,        // Add this
         ]);
         // User::factory(10)->create();
 
