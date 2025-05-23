@@ -142,12 +142,20 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     })->name('dashboard');
 
     //memberships
-    Route::get('/memberships', [App\Http\Controllers\Admin\MembershipController::class, 'index'])
+        Route::get('/memberships', [App\Http\Controllers\Admin\MembershipController::class, 'index'])
         ->name('memberships.index');
+    Route::get('/memberships/{memberProfile}', [App\Http\Controllers\Admin\MembershipController::class, 'show']) // ADD THIS
+        ->name('memberships.show');
     Route::patch('/memberships/{memberProfile}/approve', [App\Http\Controllers\Admin\MembershipController::class, 'approve'])
         ->name('memberships.approve');
     Route::patch('/memberships/{memberProfile}/reject', [App\Http\Controllers\Admin\MembershipController::class, 'reject'])
         ->name('memberships.reject');
+    // Route::get('/memberships', [App\Http\Controllers\Admin\MembershipController::class, 'index'])
+    //     ->name('memberships.index');
+    // Route::patch('/memberships/{memberProfile}/approve', [App\Http\Controllers\Admin\MembershipController::class, 'approve'])
+    //     ->name('memberships.approve');
+    // Route::patch('/memberships/{memberProfile}/reject', [App\Http\Controllers\Admin\MembershipController::class, 'reject'])
+    //     ->name('memberships.reject');
     
     //contributions
     Route::resource('contributions', App\Http\Controllers\Admin\ContributionController::class);
