@@ -22,6 +22,9 @@
                     <x-nav-link :href="route('admin.contributions.index')" :active="request()->routeIs('admin.contributions.*')">
                         {{ __('Manage Contributions') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('admin.loans.index')" :active="request()->routeIs('admin.loans.*')">
+                        {{ __('Manage Loans') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
                         {{ __('Manage Users') }}
                     </x-nav-link>
@@ -114,6 +117,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.contributions.index')" :active="request()->routeIs('admin.contributions.*')">
                 {{ __('Manage Contributions') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.loans.index')" :active="request()->routeIs('admin.loans.*')">
+                {{ __('Manage Loans') }}
             </x-responsive-nav-link>
              <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
                 {{ __('Manage Users') }}

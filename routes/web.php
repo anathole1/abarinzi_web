@@ -10,10 +10,12 @@ use App\Http\Controllers\Admin\AboutContentController;
 use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\CoreObjectiveItemController;
 use App\Http\Controllers\Admin\VisionItemController;
+use App\Http\Controllers\Admin\LoanController;
 use App\Models\HeroSlide;
 use App\Models\AboutContent;
 use App\Models\CoreObjectiveItem;
 use App\Models\VisionItem;
+
 
 Route::get('/', function () {
     $heroSlides = HeroSlide::where('is_active', true)
@@ -161,8 +163,9 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::resource('contributions', App\Http\Controllers\Admin\ContributionController::class);
     Route::patch('contributions/{contribution}/approve', [App\Http\Controllers\Admin\ContributionController::class, 'approve'])->name('contributions.approve');
     Route::patch('contributions/{contribution}/reject', [App\Http\Controllers\Admin\ContributionController::class, 'reject'])->name('contributions.reject');
-
-     Route::resource('users', App\Http\Controllers\Admin\UserController::class);
+    Route::resource('loans', LoanController::class)->middleware('can:manage loans');
+    
+    Route::resource('users', App\Http\Controllers\Admin\UserController::class);
     // Additional routes for assigning roles/permissions to users
     Route::get('users/{user}/roles', [App\Http\Controllers\Admin\UserController::class, 'showRoles'])->name('users.roles');
     Route::post('users/{user}/roles', [App\Http\Controllers\Admin\UserController::class, 'assignRoles'])->name('users.assignRoles');
@@ -202,7 +205,7 @@ Route::middleware('auth')->group(function () {
             ->name('member.contributions.store');
         Route::get('/contributions/{contribution}', [App\Http\Controllers\Member\ContributionController::class, 'show'])
             ->name('member.contributions.show')
-            ->middleware('can:view,contribution'); // Authorization
+            ->middleware('can:view own contributions'); // Authorization
     });
 });
 
