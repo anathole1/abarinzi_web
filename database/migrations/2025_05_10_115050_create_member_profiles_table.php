@@ -1,36 +1,33 @@
 <?php
-
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
-    {
+return new class extends Migration {
+    public function up(): void {
         Schema::create('member_profiles', function (Blueprint $table) {
             $table->id();
-             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('first_name');
             $table->string('last_name');
+             $table->string('accountNo')->unique();
             $table->string('phone_number')->unique();
+            $table->string('email')->unique();
             $table->string('national_id')->unique();
-            $table->string('year_left_efotec')->nullable(); // Or integer if only year
+            $table->date('dateJoined')->nullable();
+            $table->string('photoUrl')->nullable();
+            $table->string('year_left_efotec')->nullable();
             $table->string('current_location')->nullable();
-            $table->enum('membership_category', ['bronze', 'silver', 'gold']);
+
+            // OLD: $table->enum('membership_category', ['bronze', 'silver', 'gold']);
+            // NEW:
+            $table->foreignId('member_category_id')->nullable()->constrained('member_categories')->onDelete('restrict'); // Or onDelete('set null') if category can be deleted
+
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamps();
         });
     }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('member_profiles');
     }
 };

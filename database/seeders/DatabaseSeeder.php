@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             AboutContentSeeder::class,        // Add this
             CoreObjectiveItemSeeder::class, // Add this
             VisionItemSeeder::class,        // Add this
+            MemberCategorySeeder::class,
         ]);
         // User::factory(10)->create();
 

@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\CoreObjectiveItemController;
 use App\Http\Controllers\Admin\VisionItemController;
 use App\Http\Controllers\Admin\LoanController;
+use App\Http\Controllers\Admin\MemberCategoryController;
 use App\Models\HeroSlide;
 use App\Models\AboutContent;
 use App\Models\CoreObjectiveItem;
@@ -166,6 +167,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::resource('loans', LoanController::class)->middleware('can:manage loans');
     
     Route::resource('users', App\Http\Controllers\Admin\UserController::class);
+    Route::resource('member-categories', MemberCategoryController::class)->except(['show']);
     // Additional routes for assigning roles/permissions to users
     Route::get('users/{user}/roles', [App\Http\Controllers\Admin\UserController::class, 'showRoles'])->name('users.roles');
     Route::post('users/{user}/roles', [App\Http\Controllers\Admin\UserController::class, 'assignRoles'])->name('users.assignRoles');

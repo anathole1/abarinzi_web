@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('contributions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // The member who made the contribution
-            $table->string('type'); // e.g., 'regular', 'social', 
+            $table->enum('type', ['monthly_membership', 'social_contribution', 'other'])
+                  ->default('other')->change();
             $table->decimal('amount', 10, 2);
             $table->string('payment_method')->nullable(); // e.g., 'momo', 'bank_transfer', 'cash'
             $table->string('transaction_id')->nullable()->unique(); // For tracking payments

@@ -75,7 +75,8 @@
                                                 {{ $profile->user->email }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {{ ucfirst($profile->membership_category) }}
+                                                {{ $profile->memberCategory->name ?? 'N/A' }}
+                                                <!-- {{ ucfirst($profile->membership_category) }} -->
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm">
                                                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full

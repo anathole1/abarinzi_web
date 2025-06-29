@@ -32,12 +32,12 @@
                             <div><strong class="text-gray-600">Interest Rate:</strong> {{ $loan->interest_rate ? $loan->interest_rate . '%' : 'N/A' }}</div>
                             <div><strong class="text-gray-600">Term:</strong> {{ $loan->term_months ? $loan->term_months . ' months' : 'N/A' }}</div>
                             {{-- New field for Total Repayment --}}
-                            @if($loan->total_repayment_amount !== null)
-                            <div class="mt-1">
-                                <strong class="text-gray-600">Est. Total Repayment:</strong>
-                                <span class="text-gray-900 font-semibold">RWF {{ number_format($loan->total_repayment_amount, 2) }}</span>
-                            </div>
-                            @endif
+                                @if($loan->display_total_repayment !== null)
+                                <div class="mt-1">
+                                    <strong class="text-gray-600">Est. Total Repayment:</strong>
+                                    <span class="text-gray-900 font-semibold">RWF {{ number_format($loan->display_total_repayment, 2) }}</span>
+                                </div>
+                                @endif
                         </div>
                         {{-- Column 3 --}}
                         <div class="space-y-3">

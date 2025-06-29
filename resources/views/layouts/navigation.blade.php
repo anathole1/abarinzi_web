@@ -19,6 +19,9 @@
                     <x-nav-link :href="route('admin.memberships.index')" :active="request()->routeIs('admin.memberships.index*')">
                         {{ __('Manage Memberships') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('admin.member-categories.index')" :active="request()->routeIs('admin.member-categories.*')">
+                        {{ __('Member Categories') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('admin.contributions.index')" :active="request()->routeIs('admin.contributions.*')">
                         {{ __('Manage Contributions') }}
                     </x-nav-link>
@@ -114,6 +117,9 @@
             @role('admin') {{-- Spatie's directive --}}
             <x-responsive-nav-link :href="route('admin.memberships.index')" :active="request()->routeIs('admin.memberships.index')">
                 {{ __('Manage Memberships') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.member-categories.index')" :active="request()->routeIs('admin.member-categories.*')">
+                {{ __('Member Categories') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.contributions.index')" :active="request()->routeIs('admin.contributions.*')">
                 {{ __('Manage Contributions') }}

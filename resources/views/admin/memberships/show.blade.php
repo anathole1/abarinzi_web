@@ -29,6 +29,14 @@
                                 <h3 class="text-sm font-medium text-gray-500">Email Address</h3>
                                 <p class="mt-1 text-gray-700">{{ $memberProfile->user->email }}</p>
                             </div>
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-500">Profile Email</h3>
+                                <p class="mt-1 text-gray-700">{{ $memberProfile->email }}</p>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-500">Account Number</h3>
+                                <p class="mt-1 text-gray-700 font-mono">{{ $memberProfile->accountNo ?: 'N/A - Pending Approval' }}</p>
+                            </div>
                              <div>
                                 <h3 class="text-sm font-medium text-gray-500">Phone Number</h3>
                                 <p class="mt-1 text-gray-700">{{ $memberProfile->phone_number }}</p>
@@ -49,9 +57,25 @@
                                 <h3 class="text-sm font-medium text-gray-500">Current Location</h3>
                                 <p class="mt-1 text-gray-700">{{ $memberProfile->current_location ?: 'N/A' }}</p>
                             </div>
+                           <div>
+                                <h3 class="text-sm font-medium text-gray-500">Date Joined Association</h3>
+                                <p class="mt-1 text-gray-700">{{ $memberProfile->dateJoined ? $memberProfile->dateJoined->format('M d, Y') : 'N/A' }}</p>
+                            </div>
+                            @if($memberProfile->photoUrl)
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-500">Profile Photo</h3>
+                                <img src="{{ $memberProfile->full_photo_url }}" alt="Profile Photo" class="mt-1 h-24 w-24 rounded-md object-cover">
+                            </div>
+                            @endif
+                            {{-- Update category display --}}
                             <div>
                                 <h3 class="text-sm font-medium text-gray-500">Membership Category</h3>
-                                <p class="mt-1 text-gray-700 font-semibold">{{ ucfirst($memberProfile->membership_category) }} ({{ \App\Models\MemberProfile::getMembershipCategoryAmounts()[$memberProfile->membership_category] ?? 0 }} RWF)</p>
+                                <p class="mt-1 text-gray-700 font-semibold">
+                                    {{ $memberProfile->memberCategory->name ?? 'N/A' }}
+                                    @if($memberProfile->memberCategory)
+                                    ({{ number_format($memberProfile->memberCategory->monthly_contribution, 0) }} RWF/month)
+                                    @endif
+                                </p>
                             </div>
                         </div>
 
