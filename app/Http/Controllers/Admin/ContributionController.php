@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Contribution;
 use App\Models\User; // For dropdowns
+use App\Models\MemberCategory; 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -29,17 +30,14 @@ class ContributionController extends Controller
 
     public function create()
     {
-        $members = User::whereHas('roles', fn($q) => $q->where('name', 'member'))
-                        ->whereHas('memberProfile', fn($q) => $q->where('status', 'approved'))
-                        ->orderBy('name')->get();
-        return view('admin.contributions.create', compact('members'));
+        return view('admin.contributions.create');
     }
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'user_id' => 'required|exists:users,id',
-            'type' => 'required|string|max:255',
+            'type' => 'required|string|in:monthly_membership,social_contribution,other',
             'amount' => 'required|numeric|min:0',
             'payment_method' => 'required|string|max:100',
             'transaction_id' => 'nullable|string|max:255|unique:contributions,transaction_id',
@@ -48,10 +46,12 @@ class ContributionController extends Controller
             'payment_date' => 'nullable|date',
         ]);
 
-        $contribution = new Contribution($request->all());
-        $contribution->approved_by = ($request->status === 'approved' || $request->status === 'rejected') ? Auth::id() : null;
-        $contribution->save();
+        $contributionData = $validatedData;
+        if (in_array($validatedData['status'], ['approved', 'rejected'])) {
+            $contributionData['approved_by'] = Auth::id();
+        }
 
+        Contribution::create($contributionData);
         return redirect()->route('admin.contributions.index')->with('success', 'Contribution created successfully.');
     }
 
@@ -63,16 +63,32 @@ class ContributionController extends Controller
 
     public function edit(Contribution $contribution)
     {
-        $members = User::whereHas('roles', fn($q) => $q->where('name', 'member'))
-                        ->whereHas('memberProfile', fn($q) => $q->where('status', 'approved'))
-                        ->orderBy('name')->get();
-        $contribution->load('user');
-        return view('admin.contributions.edit', compact('contribution', 'members'));
+        $contribution->load('user.memberProfile.memberCategory'); // Load data for the existing selection
+
+        // Data for Tom Select's initial selected option
+        $selectedUserOption = null;
+        if ($contribution->user) {
+            $selectedUserOption = [
+                'id' => $contribution->user->id,
+                'text' => "{$contribution->user->name} ({$contribution->user->email})"
+            ];
+        }
+        // Category amounts for the *currently selected* user on the edit form
+        $memberCategoryAmounts = [];
+        if ($contribution->user && $contribution->user->memberProfile && $contribution->user->memberProfile->memberCategory) {
+            $memberCategoryAmounts[$contribution->user->id] = [
+                'monthly' => $contribution->user->memberProfile->memberCategory->monthly_contribution,
+                'social' => $contribution->user->memberProfile->memberCategory->social_monthly_contribution,
+            ];
+        }
+
+
+        return view('admin.contributions.edit', compact('contribution', 'selectedUserOption', 'memberCategoryAmounts'));
     }
 
     public function update(Request $request, Contribution $contribution)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'user_id' => 'required|exists:users,id',
             'type' => 'required|string|max:255',
             'amount' => 'required|numeric|min:0',
@@ -83,14 +99,15 @@ class ContributionController extends Controller
             'payment_date' => 'nullable|date',
         ]);
 
-        $contribution->fill($request->all());
-        if ($contribution->isDirty('status') && ($request->status === 'approved' || $request->status === 'rejected')) {
-            $contribution->approved_by = Auth::id();
-        } elseif ($request->status === 'pending') {
-            $contribution->approved_by = null;
+        $contributionData = $validatedData;
+        // If status is changed and it's an approval/rejection action
+        if ($contribution->isDirty('status') && in_array($validatedData['status'], ['approved', 'rejected'])) {
+            $contributionData['approved_by'] = Auth::id();
+        } elseif ($validatedData['status'] === 'pending') {
+            $contributionData['approved_by'] = null;
         }
-        $contribution->save();
 
+        $contribution->update($contributionData);
         return redirect()->route('admin.contributions.index')->with('success', 'Contribution updated successfully.');
     }
 

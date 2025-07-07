@@ -7,6 +7,7 @@ use App\Models\MemberCategory; // Import MemberCategory
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str; // For generating accountNo if needed
+use Illuminate\Validation\Rule;
 
 class MemberProfileController extends Controller
 {
@@ -31,26 +32,42 @@ class MemberProfileController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
+        $existingProfile = $user->memberProfile;
+        $rules = [
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'year_left_efotec' => 'nullable|string|max:10',
+            'current_location' => 'nullable|string|max:255',
+            'dateJoined' => 'required|date|before_or_equal:today',
+            'member_category_id' => 'required|exists:member_categories,id',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ];
+        $profileIdToIgnore = $existingProfile ? $existingProfile->id : null;
+
+        $rules['email'] = [
+            'required', 'string', 'email', 'max:255',
+            Rule::unique('member_profiles', 'email')->ignore($profileIdToIgnore),
+        ];
+        $rules['phone_number'] = [
+            'required', 'string', 'max:20',
+            Rule::unique('member_profiles', 'phone_number')->ignore($profileIdToIgnore),
+        ];
+        $rules['national_id'] = [
+            'required', 'string', 'max:50',
+            Rule::unique('member_profiles', 'national_id')->ignore($profileIdToIgnore),
+        ];
+    
+        $validatedData = $request->validate($rules);
+    
 
         // If profile exists and status is not 'rejected', prevent re-submission
         if ($user->memberProfile && $user->memberProfile->status !== 'rejected') {
             return redirect()->route('dashboard')->withErrors(['profile' => 'You have already submitted your membership details or it is being processed.']);
         }
 
-        $validatedData = $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:member_profiles,email,' . ($user->memberProfile->id ?? null), // Unique profile email
-            'phone_number' => 'required|string|max:20|unique:member_profiles,phone_number,' . ($user->memberProfile->id ?? null),
-            'national_id' => 'required|string|max:50|unique:member_profiles,national_id,' . ($user->memberProfile->id ?? null),
-            'year_left_efotec' => 'nullable|string|max:10',
-            'current_location' => 'nullable|string|max:255',
-            'dateJoined' => 'required|date|before_or_equal:today',
-            'member_category_id' => 'required|exists:member_categories,id',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048', // New photo field
-        ]);
+  
 
- $photoPathDatabase = null; // This will store the path relative to the 'public' directory
+        $photoPathDatabase = null; // This will store the path relative to the 'public' directory
 
         if ($request->hasFile('photo')) {
             $imageFile = $request->file('photo');

@@ -57,6 +57,9 @@
                         <x-nav-link :href="route('member.contributions.index')" :active="request()->routeIs('member.contributions.*')">
                             {{ __('My Contributions') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('member.loans.index')" :active="request()->routeIs('member.loans.*')">
+                            {{ __('My Loans') }}
+                        </x-nav-link>
                          @endif
                     @endauth
                 </div>
@@ -162,6 +165,9 @@
                         @if(Auth::user()->hasRole('member') && Auth::user()->memberProfile && Auth::user()->memberProfile->status === 'approved')
                         <x-responsive-nav-link :href="route('member.contributions.index')" :active="request()->routeIs('member.contributions.*')">
                             {{ __('My Contributions') }}
+                        </x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('member.loans.index')" :active="request()->routeIs('member.loans.*')">
+                            {{ __('My Loans') }}
                         </x-responsive-nav-link>
                         @endif
                     @endauth

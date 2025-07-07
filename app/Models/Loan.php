@@ -107,4 +107,7 @@ class Loan extends Model
         }
         return null;
     }
+    public function repayments() {
+        return $this->hasMany(LoanRepayment::class)->orderBy('payment_date', 'desc');
+    }
 }
