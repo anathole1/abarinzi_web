@@ -110,4 +110,40 @@ class Loan extends Model
     public function repayments() {
         return $this->hasMany(LoanRepayment::class)->orderBy('payment_date', 'desc');
     }
+    public function getTotalAmountRepaidAttribute(): float
+    {
+        return $this->repayments()->where('status', 'confirmed')->sum('amount_paid');
+    }
+    public function getOutstandingBalanceAttribute(): ?float
+    {
+        if (is_null($this->total_repayment_calculated)) {
+            return null; // Cannot calculate if total repayment isn't set
+        }
+        $totalRepaid = $this->total_amount_repaid; // Uses the accessor above
+        return round($this->total_repayment_calculated - $totalRepaid, 2);
+    }
+    public function updateBalanceAndStatusAfterRepayment(float $repaymentAmount): void
+    {
+        // This method is called after a repayment record itself is saved and confirmed.
+        // The $repaymentAmount is passed for potential logging or complex logic,
+        // but the main balance check will use the sum of all confirmed repayments.
+
+        $outstandingBalance = $this->outstanding_balance; // Uses the accessor
+
+        if (!is_null($outstandingBalance) && $outstandingBalance <= 0) {
+            $this->status = 'repaid';
+            // Optionally set final_due_date to today if not already set
+            // if (is_null($this->final_due_date)) {
+            //     $this->final_due_date = now()->toDateString();
+            // }
+        } elseif ($this->status === 'pending' || $this->status === 'approved') {
+            // If a repayment is made on a loan that wasn't 'active', make it active.
+            $this->status = 'active';
+        }
+        // Add logic here to check for 'defaulted' status based on missed payments if needed.
+        // For now, we are not automatically setting to 'defaulted' here.
+
+        $this->save();
+    }
+    protected $appends = ['display_total_repayment', 'total_amount_repaid', 'outstanding_balance'];
 }

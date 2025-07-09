@@ -1,6 +1,6 @@
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
     <!-- Primary Navigation Menu -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
                 <!-- Logo -->
@@ -27,6 +27,9 @@
                     </x-nav-link>
                     <x-nav-link :href="route('admin.loans.index')" :active="request()->routeIs('admin.loans.*')">
                         {{ __('Manage Loans') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('admin.loan-repayments.index')" :active="request()->routeIs('admin.loan-repayments.*')">
+                        {{ __('Loan Repayments') }}
                     </x-nav-link>
                     <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
                         {{ __('Manage Users') }}
@@ -129,6 +132,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.loans.index')" :active="request()->routeIs('admin.loans.*')">
                 {{ __('Manage Loans') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.loan-repayments.index')" :active="request()->routeIs('admin.loan-repayments.*')">
+                {{ __('Loan Repayments') }}
             </x-responsive-nav-link>
              <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
                 {{ __('Manage Users') }}

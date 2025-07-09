@@ -24,6 +24,8 @@ use App\Http\Controllers\Admin\PermissionController as AdminPermissionController
 use App\Http\Controllers\Admin\MemberCategoryController as AdminMemberCategoryController;
 use App\Http\Controllers\Member\LoanApplicationController as MemberLoanApplicationController;
 use App\Http\Controllers\Member\LoanRepaymentController as MemberLoanRepaymentController;
+use App\Http\Controllers\Admin\LoanRepaymentController as AdminLoanRepaymentController;
+use App\Http\Controllers\Admin\ReportController;
 
 // Content Management Admin Controllers
 use App\Http\Controllers\Admin\HeroSlideController;
@@ -127,7 +129,30 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         // AJAX Search Routes (Admin)
         Route::get('/search-members', function (Request $request) { /* ... your search closure ... */ })->name('members.search'); // Consider moving to a controller
         Route::get('/get-member-category-amounts/{user}', function (User $user) { /* ... your category amounts closure ... */ })->name('members.category-amounts'); // Consider moving
-    });
+
+        Route::get('loan-repayments', [AdminLoanRepaymentController::class, 'index'])->name('loan-repayments.index');
+        Route::get('loan-repayments/{loanRepayment}', [AdminLoanRepaymentController::class, 'show'])->name('loan-repayments.show');
+        Route::patch('loan-repayments/{loanRepayment}/confirm', [AdminLoanRepaymentController::class, 'confirm'])->name('loan-repayments.confirm');
+        Route::patch('loan-repayments/{loanRepayment}/fail', [AdminLoanRepaymentController::class, 'fail'])->name('loan-repayments.fail');
+        // Optional: Routes for admin to edit/delete repayment records
+        // Route::get('loan-repayments/{loanRepayment}/edit', [AdminLoanRepaymentController::class, 'edit'])->name('loan-repayments.edit');
+        // Route::put('loan-repayments/{loanRepayment}', [AdminLoanRepaymentController::class, 'update'])->name('loan-repayments.update');
+        // Route::delete('loan-repayments/{loanRepayment}', [AdminLoanRepaymentController::class, 'destroy'])->name('loan-repayments.destroy');
+
+        Route::get('/reports/members', [ReportController::class, 'membersReport'])->name('reports.members');
+        Route::get('/reports/members/pdf', [ReportController::class, 'exportMembersPdf'])->name('reports.members.pdf'); // New
+        Route::get('/reports/members/excel', [ReportController::class, 'exportMembersExcel'])->name('reports.members.excel'); // New
+    
+        Route::get('/reports/contributions', [ReportController::class, 'contributionsReport'])->name('reports.contributions');
+        // TODO: Add export routes for contributions
+    
+        Route::get('/reports/loans', [ReportController::class, 'loansReport'])->name('reports.loans');
+        // Route::get('/reports/members', [ReportController::class, 'membersReport'])->name('reports.members')->middleware('permission:generate reports');
+        // Route::get('/reports/contributions', [ReportController::class, 'contributionsReport'])->name('reports.contributions')->middleware('permission:generate reports');
+        // Route::get('/reports/loans', [ReportController::class, 'loansReport'])->name('reports.loans')->middleware('permission:generate reports');
+        // Add more report routes here
+        
+            });
 
 
     // Content Management Section (Role: admin OR author)

@@ -41,6 +41,7 @@ class RolesAndPermissionsSeeder extends Seeder
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
         }
+        Permission::firstOrCreate(['name' => 'generate reports']);
 
         // Create roles and assign existing permissions
         $adminRole = Role::firstOrCreate(['name' => 'admin']);

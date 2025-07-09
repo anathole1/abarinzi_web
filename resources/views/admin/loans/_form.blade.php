@@ -41,7 +41,12 @@
     <div>
         <x-input-label for="status" :value="__('Loan Status')" />
         <select id="status" name="status" class="block mt-1 w-full ..." required>
-            {{-- ... status options ... --}}
+            <option value="pending" {{ (isset($loan) && $loan->status == 'pending') || old('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+            <option value="approved" {{ (isset($loan) && $loan->status == 'approved') || old('status') == 'approved' ? 'selected' : '' }}>Approved</option>
+            <option value="rejected" {{ (isset($loan) && $loan->status == 'rejected') || old('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
+            <option value="active" {{ (isset($loan) && $loan->status == 'active') || old('status') == 'active' ? 'selected' : '' }}>Active</option>
+            <option value="repaid" {{ (isset($loan) && $loan->status == 'repaid') || old('status') == 'repaid' ? 'selected' : '' }}>Repaid</option>
+            <option value="defaulted" {{ (isset($loan) && $loan->status == 'defaulted') || old('status') == 'defaulted' ? 'selected' : '' }}>Defaulted</option>
         </select>
         <x-input-error :messages="$errors->get('status')" class="mt-2" />
     </div>

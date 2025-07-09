@@ -1,4 +1,4 @@
-<x-app-layout-public> {{-- Or your member area layout --}}
+<x-app-layout> {{-- Or your member area layout --}}
     <x-slot name="title">Apply for a Loan</x-slot>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
@@ -64,4 +64,4 @@
             </div>
         </div>
     </div>
-</x-app-layout-public>
+</x-app-layout>
