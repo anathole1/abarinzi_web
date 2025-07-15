@@ -28,6 +28,10 @@ class RolesAndPermissionsSeeder extends Seeder
             'edit members',
             'delete members',
             'approve memberships',
+            'create users',
+            'view users',
+            'edit users',
+            'delete users',
             'manage users', 
             'view contributions',
             'view own contributions',
@@ -36,12 +40,17 @@ class RolesAndPermissionsSeeder extends Seeder
             'edit contributions',
             'delete contributions',
             'manage contribution status',
+            'generate reports',
+            'manage loans',
+            'create loans',
+            'view loans',
+            'edit loans',
+            'delete loans'
         ];
 
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
         }
-        Permission::firstOrCreate(['name' => 'generate reports']);
 
         // Create roles and assign existing permissions
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
