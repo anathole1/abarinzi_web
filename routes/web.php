@@ -34,6 +34,9 @@ use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\CoreObjectiveItemController;
 use App\Http\Controllers\Admin\VisionItemController;
 
+//Notification
+use App\Http\Controllers\NotificationController;
+
 use App\Models\User; // For admin search route closure if kept
 
 /*
@@ -60,6 +63,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Member Profile Completion
     Route::get('/complete-profile', [MemberProfileController::class, 'create'])->name('member-profile.create');
     Route::post('/member-profile', [MemberProfileController::class, 'store'])->name('member-profile.store');
+
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 
     // Member-specific features (require approved profile)
     Route::middleware(['ensure.profile.approved'])->group(function () {
