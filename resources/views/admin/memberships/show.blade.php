@@ -57,6 +57,10 @@
                                 <h3 class="text-sm font-medium text-gray-500">Current Location</h3>
                                 <p class="mt-1 text-gray-700">{{ $memberProfile->current_location ?: 'N/A' }}</p>
                             </div>
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-500">Occupation</h3>
+                                <p class="mt-1 text-gray-700">{{ $memberProfile->occupation ? Str::title(str_replace('_', ' ', $memberProfile->occupation)) : 'N/A' }}</p>
+                            </div>
                            <div>
                                 <h3 class="text-sm font-medium text-gray-500">Date Joined Association</h3>
                                 <p class="mt-1 text-gray-700">{{ $memberProfile->dateJoined ? $memberProfile->dateJoined->format('M d, Y') : 'N/A' }}</p>

@@ -36,7 +36,8 @@ use App\Http\Controllers\Admin\VisionItemController;
 
 //Notification
 use App\Http\Controllers\NotificationController;
-
+//update profile
+use App\Http\Controllers\Admin\ProfileUpdateController;
 use App\Models\User; // For admin search route closure if kept
 
 /*
@@ -49,7 +50,7 @@ use App\Models\User; // For admin search route closure if kept
 Route::get('/', [PageController::class, 'welcome'])->name('welcome'); // Changed from 'welcome' to 'home' for convention
 Route::get('/about/our-work-and-vision', [PageController::class, 'aboutOurWorkAndVision'])->name('about.work-vision');
 Route::post('/contact-submit', [ContactController::class, 'submit'])->name('contact.submit');
-Route::post('/newsletter-subscribe', [NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
+//Route::post('/newsletter-subscribe', [NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
 
 
 // Authenticated User Routes
@@ -85,6 +86,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]);
         Route::get('my-loans/{loan}/repayments/create', [MemberLoanRepaymentController::class, 'create'])->name('member.loan_repayments.create');
         Route::post('my-loans/{loan}/repayments', [MemberLoanRepaymentController::class, 'store'])->name('member.loan_repayments.store');
+
+         // Member Profile Update Routes
+        Route::get('/my-profile/edit', [MemberProfileController::class, 'edit'])->name('member-profile.edit');
+        Route::put('/my-profile/update', [MemberProfileController::class, 'update'])->name('member-profile.update');
     });
 });
 
@@ -129,6 +134,50 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         Route::patch('contributions/{contribution}/approve', [AdminContributionController::class, 'approve'])->name('contributions.approve');
         Route::patch('contributions/{contribution}/reject', [AdminContributionController::class, 'reject'])->name('contributions.reject');
 
+        //profile approval
+        Route::get('profile-updates', [ProfileUpdateController::class, 'index'])->name('profile-updates.index');
+        Route::get('profile-updates/{profileUpdate}', [ProfileUpdateController::class, 'show'])->name('profile-updates.show');
+        Route::patch('profile-updates/{profileUpdate}/approve', [ProfileUpdateController::class, 'approve'])->name('profile-updates.approve');
+        Route::patch('profile-updates/{profileUpdate}/reject', [ProfileUpdateController::class, 'reject'])->name('profile-updates.reject');
+
+        // AJAX Search Route for Tom Select
+    Route::get('/search-members', function (Request $request) {
+        $searchTerm = $request->input('q', '');
+        if (empty($searchTerm)) {
+            return response()->json(['items' => []]);
+        }
+
+        $query = User::query()
+            ->whereHas('memberProfile', fn ($q) => $q->where('status', 'approved'))
+            ->orderBy('name');
+
+        $query->where(function ($q) use ($searchTerm) {
+            $q->where('name', 'LIKE', "%{$searchTerm}%")
+              ->orWhere('email', 'LIKE', "%{$searchTerm}%")
+              ->orWhereHas('memberProfile', function ($mpQuery) use ($searchTerm) {
+                  $mpQuery->where('accountNo', 'LIKE', "%{$searchTerm}%");
+              });
+        });
+
+        $users = $query->limit(20)->get(['id', 'name', 'email']);
+
+        $formattedUsers = $users->map(function ($user) {
+            return ['id' => $user->id, 'text' => "{$user->name} ({$user->email})"];
+        });
+
+        return response()->json(['items' => $formattedUsers]);
+    })->name('members.search');
+
+    // AJAX Route to get category amounts for a selected member
+    Route::get('/get-member-category-amounts/{user}', function (User $user) {
+        if ($user->memberProfile && $user->memberProfile->memberCategory) {
+            return response()->json([
+                'monthly' => $user->memberProfile->memberCategory->monthly_contribution,
+                'social' => $user->memberProfile->memberCategory->social_monthly_contribution,
+            ]);
+        }
+        return response()->json(null, 404);
+    })->name('members.category-amounts');
         // Loan Management (Admin)
         Route::resource('loans', AdminLoanController::class);
 
@@ -149,14 +198,17 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         Route::get('/reports/members/pdf', [ReportController::class, 'exportMembersPdf'])->name('reports.members.pdf'); // New
         Route::get('/reports/members/excel', [ReportController::class, 'exportMembersExcel'])->name('reports.members.excel'); // New
     
+        // -- ADD THESE ROUTES FOR CONTRIBUTIONS --
         Route::get('/reports/contributions', [ReportController::class, 'contributionsReport'])->name('reports.contributions');
-        // TODO: Add export routes for contributions
-    
+        Route::get('/reports/contributions/pdf', [ReportController::class, 'exportContributionsPdf'])->name('reports.contributions.pdf');
+        Route::get('/reports/contributions/excel', [ReportController::class, 'exportContributionsExcel'])->name('reports.contributions.excel');
+        // -- END OF NEW CONTRIBUTION ROUTES --
+
+        // -- ADD THESE ROUTES FOR LOANS --
         Route::get('/reports/loans', [ReportController::class, 'loansReport'])->name('reports.loans');
-        // Route::get('/reports/members', [ReportController::class, 'membersReport'])->name('reports.members')->middleware('permission:generate reports');
-        // Route::get('/reports/contributions', [ReportController::class, 'contributionsReport'])->name('reports.contributions')->middleware('permission:generate reports');
-        // Route::get('/reports/loans', [ReportController::class, 'loansReport'])->name('reports.loans')->middleware('permission:generate reports');
-        // Add more report routes here
+        Route::get('/reports/loans/pdf', [ReportController::class, 'exportLoansPdf'])->name('reports.loans.pdf');
+        Route::get('/reports/loans/excel', [ReportController::class, 'exportLoansExcel'])->name('reports.loans.excel');
+        // -- END OF NEW LOAN ROUTES --
         
             });
 

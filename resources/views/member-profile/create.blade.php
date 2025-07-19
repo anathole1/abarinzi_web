@@ -69,6 +69,18 @@
                                 <x-text-input id="current_location" class="block mt-1 w-full" type="text" name="current_location" :value="old('current_location', Auth::user()->memberProfile->current_location ?? '')" />
                                 <x-input-error :messages="$errors->get('current_location')" class="mt-2" />
                             </div>
+                            {{-- Occupation --}}
+                            <div class="md:col-span-2">
+                                <x-input-label for="occupation" :value="__('Current Occupation / Sector')" />
+                                <select id="occupation" name="occupation" class="block mt-1 w-full rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required>
+                                    <option value="">-- Select your sector --</option>
+                                    <option value="private_sector" {{ old('occupation', Auth::user()->memberProfile->occupation ?? '') == 'private_sector' ? 'selected' : '' }}>Private Sector</option>
+                                    <option value="public_sector" {{ old('occupation', Auth::user()->memberProfile->occupation ?? '') == 'public_sector' ? 'selected' : '' }}>Public Sector</option>
+                                    <option value="self_employed" {{ old('occupation', Auth::user()->memberProfile->occupation ?? '') == 'self_employed' ? 'selected' : '' }}>Self-Employed</option>
+                                    <option value="other" {{ old('occupation', Auth::user()->memberProfile->occupation ?? '') == 'other' ? 'selected' : '' }}>Other</option>
+                                </select>
+                                <x-input-error :messages="$errors->get('occupation')" class="mt-2" />
+                            </div>
 
                             {{-- Date Joined Association --}}
                             <div>

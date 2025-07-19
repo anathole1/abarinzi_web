@@ -19,6 +19,15 @@
                     <x-nav-link :href="route('admin.memberships.index')" :active="request()->routeIs('admin.memberships.index*')">
                         {{ __('Manage Memberships') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('admin.profile-updates.index')" :active="request()->routeIs('admin.profile-updates.*')">
+                        {{ __('Profile Updates') }}
+                        @php
+                            $pendingUpdatesCount = \App\Models\MemberProfileUpdate::where('status', 'pending')->count();
+                        @endphp
+                        @if($pendingUpdatesCount > 0)
+                            <span class="ml-2 inline-flex items-center justify-center h-5 w-5 rounded-full bg-yellow-400 text-xs font-semibold text-yellow-800">{{ $pendingUpdatesCount }}</span>
+                        @endif
+                    </x-nav-link>
                     <x-nav-link :href="route('admin.member-categories.index')" :active="request()->routeIs('admin.member-categories.*')">
                         {{ __('Member Categories') }}
                     </x-nav-link>
@@ -104,6 +113,11 @@
                         <x-dropdown-link :href="route('profile.edit')">
                             {{ __('Profile') }}
                         </x-dropdown-link>
+                        @if(Auth::user()->memberProfile && Auth::user()->memberProfile->status === 'approved')
+                        <x-dropdown-link :href="route('member-profile.edit')">
+                            {{ __('Update My Membership Info') }}
+                        </x-dropdown-link>
+                        @endif
 
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('logout') }}">

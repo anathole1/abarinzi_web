@@ -28,9 +28,14 @@ class ContributionController extends Controller
         return view('admin.contributions.index', compact('contributions', 'users'));
     }
 
-    public function create()
+   public function create()
     {
-        return view('admin.contributions.create');
+        // Define the variables that the _form.blade.php partial expects.
+        // On the create page, these will be null/empty, as no user is selected yet.
+        $selectedUserOption = null;
+        $memberCategoryAmounts = []; // Pass an empty array
+
+        return view('admin.contributions.create', compact('selectedUserOption', 'memberCategoryAmounts'));
     }
 
     public function store(Request $request)
@@ -63,9 +68,8 @@ class ContributionController extends Controller
 
     public function edit(Contribution $contribution)
     {
-        $contribution->load('user.memberProfile.memberCategory'); // Load data for the existing selection
+        $contribution->load('user.memberProfile.memberCategory');
 
-        // Data for Tom Select's initial selected option
         $selectedUserOption = null;
         if ($contribution->user) {
             $selectedUserOption = [
@@ -73,19 +77,17 @@ class ContributionController extends Controller
                 'text' => "{$contribution->user->name} ({$contribution->user->email})"
             ];
         }
-        // Category amounts for the *currently selected* user on the edit form
+
         $memberCategoryAmounts = [];
-        if ($contribution->user && $contribution->user->memberProfile && $contribution->user->memberProfile->memberCategory) {
+        if ($contribution->user?->memberProfile?->memberCategory) { // Using nullsafe operator for robustness
             $memberCategoryAmounts[$contribution->user->id] = [
                 'monthly' => $contribution->user->memberProfile->memberCategory->monthly_contribution,
                 'social' => $contribution->user->memberProfile->memberCategory->social_monthly_contribution,
             ];
         }
 
-
         return view('admin.contributions.edit', compact('contribution', 'selectedUserOption', 'memberCategoryAmounts'));
     }
-
     public function update(Request $request, Contribution $contribution)
     {
         $validatedData = $request->validate([

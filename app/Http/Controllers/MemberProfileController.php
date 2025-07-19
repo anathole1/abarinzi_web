@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str; // For generating accountNo if needed
 use Illuminate\Validation\Rule;
+use App\Models\MemberProfileUpdate; 
 
 class MemberProfileController extends Controller
 {
@@ -38,6 +39,7 @@ class MemberProfileController extends Controller
             'last_name' => 'required|string|max:255',
             'year_left_efotec' => 'nullable|string|max:10',
             'current_location' => 'nullable|string|max:255',
+            'occupation' => ['required', Rule::in(['private_sector', 'public_sector', 'self_employed', 'other'])],
             'dateJoined' => 'required|date|before_or_equal:today',
             'member_category_id' => 'required|exists:member_categories,id',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
@@ -105,6 +107,7 @@ class MemberProfileController extends Controller
             'national_id' => $validatedData['national_id'],
             'year_left_efotec' => $validatedData['year_left_efotec'],
             'current_location' => $validatedData['current_location'],
+            'occupation' => $validatedData['occupation'],
             'dateJoined' => $validatedData['dateJoined'],
             'member_category_id' => $validatedData['member_category_id'],
             'photoUrl' => $photoPathDatabase,
@@ -145,5 +148,97 @@ class MemberProfileController extends Controller
             $accountNo = "{$prefix}{$timestamp}{$randomPart}";
         } while (MemberProfile::where('accountNo', $accountNo)->exists());
         return $accountNo;
+    }
+
+     public function edit() {
+        $user = Auth::user();
+        $memberProfile = $user->memberProfile;
+
+        // Check if member has an approved profile to edit
+        if (!$memberProfile || $memberProfile->status !== 'approved') {
+            return redirect()->route('dashboard')->with('error', 'You must have an approved profile to request updates.');
+        }
+
+        // Check for an existing pending update request
+        $pendingUpdate = MemberProfileUpdate::where('user_id', $user->id)
+                                            ->where('status', 'pending')
+                                            ->first();
+
+        $membershipCategories = MemberCategory::where('is_active', true)->orderBy('name')->get();
+
+        return view('member-profile.edit', compact('memberProfile', 'membershipCategories', 'pendingUpdate'));
+    }
+
+    /**
+     * Store a profile update request.
+     */
+    public function update(Request $request) {
+        $user = Auth::user();
+        $memberProfile = $user->memberProfile;
+
+        if (!$memberProfile || $memberProfile->status !== 'approved') {
+            return redirect()->route('dashboard')->with('error', 'You cannot update a profile that is not yet approved.');
+        }
+
+        // Prevent submitting a new update if one is already pending
+        if (MemberProfileUpdate::where('user_id', $user->id)->where('status', 'pending')->exists()) {
+            return redirect()->route('member-profile.edit')->with('error', 'You already have a pending update request. Please wait for it to be reviewed.');
+        }
+
+        // Same validation rules as store, but for different purpose
+        $rules = [
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            //'email' => ['required', 'string', 'email', 'max:255', Rule::unique('member_profiles', 'email')->ignore($memberProfile->id)],
+            'phone_number' => ['required', 'string', 'max:20', Rule::unique('member_profiles', 'phone_number')->ignore($memberProfile->id)],
+            //'national_id' => ['required', 'string', 'max:50', Rule::unique('member_profiles', 'national_id')->ignore($memberProfile->id)],
+            'year_left_efotec' => 'nullable|string|max:10',
+            'current_location' => 'nullable|string|max:255',
+            'occupation' => ['required', Rule::in(['private_sector', 'public_sector', 'self_employed', 'other'])],
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            // Category change might need a different process or be disallowed for members
+            // For now, let's allow it in the request but admin approves
+            'member_category_id' => 'required|exists:member_categories,id',
+        ];
+        $validatedData = $request->validate($rules);
+
+        // Handle file upload
+        if ($request->hasFile('photo')) {
+            $imageFile = $request->file('photo');
+            $uploadDirectory = 'uploads/member_photos/'; // Path within public directory
+            $destinationPath = public_path($uploadDirectory); // Absolute path to public/uploads/member_photos/
+
+            // Create a unique filename
+            $filename = time() . '_' . Str::slug(pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $imageFile->getClientOriginalExtension();
+
+            // Ensure the directory exists
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0775, true); // Create it with writable permissions
+            }
+
+            // Delete old photo if updating and exists
+            if($user->memberProfile && $user->memberProfile->photoUrl && file_exists(public_path($user->memberProfile->photoUrl))){
+                unlink(public_path($user->memberProfile->photoUrl));
+            }
+
+            // Move the uploaded file to the public directory
+            $imageFile->move($destinationPath, $filename);
+            $photoPath = $uploadDirectory . $filename; 
+           
+            $validatedData['photoUrl'] = $photoPath; // Add to validated data
+        } else {
+             // Keep existing photo path if no new one is uploaded
+             $validatedData['photoUrl'] = $memberProfile->photoUrl;
+        }
+        unset($validatedData['photo']); // Remove the temporary file object
+
+        MemberProfileUpdate::create([
+            'user_id' => $user->id,
+            'member_profile_id' => $memberProfile->id,
+            'updated_data' => $validatedData, // Store all new data as JSON
+            'status' => 'pending',
+        ]);
+
+        return redirect()->route('dashboard')->with('success', 'Your profile update request has been submitted for review.');
     }
 }

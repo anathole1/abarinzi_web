@@ -21,6 +21,7 @@ class MemberProfile extends Model
         'national_id',
         'year_left_efotec',
         'current_location',
+        'occupation',
         'dateJoined',
         'photoUrl', // Stores path like "uploads/member_photos/image.jpg"
         'member_category_id',

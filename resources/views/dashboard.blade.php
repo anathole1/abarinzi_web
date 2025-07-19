@@ -120,6 +120,65 @@
                         <p class="mt-1 text-sm text-gray-600">
                             {{ __("Your membership is active. You can now access all member features.") }}
                         </p>
+                        <a href="{{ route('member-profile.edit') }}" class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 shadow-sm">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                Update Profile
+                            </a>
+                            
+                            {{-- NEW SECTION: Member Profile and Category Summary --}}
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                            {{-- Column 1: Profile Info --}}
+                            <div class="lg:col-span-1 bg-gray-50 p-6 rounded-lg border">
+                                <div class="flex flex-col items-center text-center">
+                                    <img src="{{ $memberProfile->full_photo_url }}" alt="Profile Photo" class="h-24 w-24 rounded-full object-cover mb-4 shadow-md">
+                                    <h4 class="text-lg font-bold text-gray-800">{{ $memberProfile->first_name }} {{ $memberProfile->last_name }}</h4>
+                                    <p class="text-sm text-gray-500">{{ $memberProfile->email }}</p>
+                                    <p class="text-sm text-gray-500">{{ $memberProfile->phone_number }}</p>
+                                    <p class="mt-2 text-sm text-gray-700">Account No: <span class="font-mono">{{ $memberProfile->accountNo }}</span></p>
+                                    <p class="text-xs text-gray-500">Joined: {{ $memberProfile->dateJoined ? $memberProfile->dateJoined->format('M d, Y') : 'N/A' }}</p>
+                                </div>
+                            </div>
+
+                            {{-- Column 2 & 3: Membership Category Details --}}
+                            @if($memberProfile->memberCategory)
+                                <div class="lg:col-span-2 p-6 bg-blue-50 border border-blue-200 rounded-lg">
+                                    <h4 class="text-xl font-semibold text-blue-700 mb-4">
+                                        Your Membership Tier:
+                                        <span class="text-blue-800 font-bold">{{ $memberProfile->memberCategory->name }}</span>
+                                    </h4>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                            <p class="text-gray-600 font-medium">Monthly Membership Dues:</p>
+                                            <p class="text-gray-800 text-lg font-semibold">RWF {{ number_format($memberProfile->memberCategory->monthly_contribution, 0) }}</p>
+                                        </div>
+                                        @if($memberProfile->memberCategory->social_monthly_contribution > 0)
+                                        <div>
+                                            <p class="text-gray-600 font-medium">Monthly Social Contribution:</p>
+                                            <p class="text-gray-800 text-lg font-semibold">RWF {{ number_format($memberProfile->memberCategory->social_monthly_contribution, 0) }}</p>
+                                        </div>
+                                        @endif
+                                        <div>
+                                            <p class="text-gray-600 font-medium">Loan Limit:</p>
+                                            <p class="text-gray-800 text-lg font-semibold">{{ $memberProfile->memberCategory->percentage_of_loan_allowed }}% <span class="text-xs">(of eligible savings)</span></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-600 font-medium">Loan Interest Rate:</p>
+                                            <p class="text-gray-800 text-lg font-semibold">{{ $memberProfile->memberCategory->monthly_interest_rate_loan }}% <span class="text-xs">(per month)</span></p>
+                                        </div>
+                                    </div>
+                                    @if($memberProfile->memberCategory->description)
+                                    <p class="mt-4 text-xs text-gray-500 italic">
+                                        {{ $memberProfile->memberCategory->description }}
+                                    </p>
+                                    @endif
+                                </div>
+                            @else
+                                <div class="lg:col-span-2 p-4 bg-yellow-50 text-yellow-700 rounded-md">
+                                    Your membership category details are not available. Please contact an administrator.
+                                </div>
+                            @endif
+                        </div>
+                        {{-- END NEW SECTION --}}
 
                         {{-- Contribution Summary for Approved Members --}}
                         <div class="mt-6 border-t pt-6">
