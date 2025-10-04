@@ -10,7 +10,7 @@ class MemberCategorySeeder extends Seeder
 {
     public function run(): void
     {
-        MemberCategory::truncate(); // Optional: clear table before seeding
+        // MemberCategory::truncate(); // Optional: clear table before seeding
 
         MemberCategory::create([
             'name' => 'Bronze',

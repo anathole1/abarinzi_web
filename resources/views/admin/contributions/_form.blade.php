@@ -97,6 +97,57 @@
 
 
 @push('scripts')
+
+<script>
+    console.log('Loan Form Script: Block is being processed.'); // DEBUG #1
+
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('Loan Form Script: DOMContentLoaded event fired.'); // DEBUG #2
+
+        const userSearchSelectEl = document.getElementById('user_search_select_loan');
+        const hiddenUserIdInput = document.getElementById('user_id_hidden_loan');
+
+        console.log('Loan Form Script: Target element:', userSearchSelectEl); // DEBUG #3
+
+        if (typeof TomSelect !== 'undefined') {
+            console.log('Loan Form Script: TomSelect library is available.'); // DEBUG #4
+
+            if (userSearchSelectEl) {
+                console.log('Loan Form Script: Initializing TomSelect...'); // DEBUG #5
+                new TomSelect(userSearchSelectEl, {
+                    valueField: 'id',
+                    labelField: 'text',
+                    searchField: ['text'],
+                    create: false,
+                    load: function(query, callback) {
+                        if (!query.length) return callback();
+                        // This route must exist and be accessible
+                        const url = `{{ route('admin.members.search') }}?q=${encodeURIComponent(query)}`;
+                        console.log(`Loan Form Script: Fetching members from: ${url}`); // DEBUG #6
+                        fetch(url)
+                            .then(response => response.json())
+                            .then(json => {
+                                console.log('Loan Form Script: Received data:', json.items); // DEBUG #7
+                                callback(json.items);
+                            }).catch((error)=>{
+                                console.error('Loan Form Script: AJAX fetch error:', error); // DEBUG #8
+                                callback();
+                            });
+                    },
+                    onChange: function(value) {
+                        if (hiddenUserIdInput) {
+                            hiddenUserIdInput.value = value;
+                        }
+                    }
+                });
+                console.log('Loan Form Script: TomSelect initialized.'); // DEBUG #9
+            }
+        } else {
+            console.error('Loan Form Script: TomSelect library is NOT loaded. Check app.js/bootstrap.js imports and run "npm run dev".'); // DEBUG #10
+        }
+    });
+</script>
+
 <script>
     let preloadedCategoryAmounts = @json($memberCategoryAmounts ?? []);
     let currentUserId = "{{ old('user_id', $contribution->user_id ?? '') }}";

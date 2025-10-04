@@ -7,7 +7,8 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 md:p-8">
                 @include('partials.flash-messages')
                 <form method="POST" action="{{ route('admin.loans.store') }}">
-                    @include('admin.loans._form', ['members' => $members])
+                    {{-- The controller now passes $loan and $selectedUserOption for consistency --}}
+                    @include('admin.loans._form', ['loan' => $loan, 'selectedUserOption' => $selectedUserOption])
                 </form>
             </div>
         </div>

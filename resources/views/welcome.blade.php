@@ -14,7 +14,7 @@
                     <div class="flex items-center">
                         <a href="{{ url('/') }}" class="flex-shrink-0">
                             {{-- Replace with your logo --}}
-                            <img class="h-10 w-auto" src="{{asset('logo/43463.jpg')}}" alt="EFOTEC Alumni Logo">
+                            <img class="h-10 w-auto" src="{{asset('logo/logo.png')}}" alt="Abarinzi Family">
                         </a>
                         <div class="hidden md:block">
                             <div class="ml-10 flex items-baseline space-x-4">

@@ -26,6 +26,7 @@ use App\Http\Controllers\Member\LoanApplicationController as MemberLoanApplicati
 use App\Http\Controllers\Member\LoanRepaymentController as MemberLoanRepaymentController;
 use App\Http\Controllers\Admin\LoanRepaymentController as AdminLoanRepaymentController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\OfficeController;
 
 // Content Management Admin Controllers
 use App\Http\Controllers\Admin\HeroSlideController;
@@ -39,7 +40,7 @@ use App\Http\Controllers\NotificationController;
 //update profile
 use App\Http\Controllers\Admin\ProfileUpdateController;
 use App\Models\User; // For admin search route closure if kept
-
+use Illuminate\Support\Facades\DB;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -140,44 +141,71 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         Route::patch('profile-updates/{profileUpdate}/approve', [ProfileUpdateController::class, 'approve'])->name('profile-updates.approve');
         Route::patch('profile-updates/{profileUpdate}/reject', [ProfileUpdateController::class, 'reject'])->name('profile-updates.reject');
 
-        // AJAX Search Route for Tom Select
-    Route::get('/search-members', function (Request $request) {
-        $searchTerm = $request->input('q', '');
-        if (empty($searchTerm)) {
+        //positions
+        Route::resource('offices', OfficeController::class);
+        //search members
+        Route::get('/search-members', function (Request $request) {
+        $searchTerm = $request->input('q');
+
+        if (!$searchTerm) {
             return response()->json(['items' => []]);
         }
 
         $query = User::query()
-            ->whereHas('memberProfile', fn ($q) => $q->where('status', 'approved'))
+            ->with('memberProfile') // Eager load for efficiency and display
+            // IMPORTANT: Only search for users who have a COMPLETED and APPROVED profile
+            ->whereHas('memberProfile', function ($q) {
+                $q->where('status', 'approved');
+            })
             ->orderBy('name');
 
+        // Search across multiple fields in both `users` and `member_profiles` tables
         $query->where(function ($q) use ($searchTerm) {
-            $q->where('name', 'LIKE', "%{$searchTerm}%")
-              ->orWhere('email', 'LIKE', "%{$searchTerm}%")
+            $q->where('name', 'LIKE', "%{$searchTerm}%") // Search user's login name
+              ->orWhere('email', 'LIKE', "%{$searchTerm}%") // Search user's login email
+
+              // Also search within the related member_profile
               ->orWhereHas('memberProfile', function ($mpQuery) use ($searchTerm) {
-                  $mpQuery->where('accountNo', 'LIKE', "%{$searchTerm}%");
+                  $mpQuery->where('first_name', 'LIKE', "%{$searchTerm}%")
+                          ->orWhere('last_name', 'LIKE', "%{$searchTerm}%")
+                          ->orWhere('email', 'LIKE', "%{$searchTerm}%") // <-- SEARCH PROFILE EMAIL
+                          ->orWhere('accountNo', 'LIKE', "%{$searchTerm}%")
+                          ->orWhere('phone_number', 'LIKE', "%{$searchTerm}%")
+                          ->orWhere('national_id', 'LIKE', "%{$searchTerm}%")
+                          // Search concatenated full name
+                          ->orWhere(DB::raw("CONCAT(first_name, ' ', last_name)"), 'LIKE', "%{$searchTerm}%");
               });
         });
 
-        $users = $query->limit(20)->get(['id', 'name', 'email']);
+        $users = $query->limit(20)->get();
 
+        // Format for Tom Select
         $formattedUsers = $users->map(function ($user) {
-            return ['id' => $user->id, 'text' => "{$user->name} ({$user->email})"];
+            $accountInfo = $user->memberProfile->accountNo ? " | Acc: " . $user->memberProfile->accountNo : "";
+            // Display the user's main login name but also their profile email for clarity if different
+            $emailDisplay = $user->email;
+            if ($user->memberProfile->email && $user->memberProfile->email !== $user->email) {
+                $emailDisplay .= " (Profile: {$user->memberProfile->email})";
+            }
+            return [
+                'id' => $user->id,
+                'text' => "{$user->name} ({$emailDisplay}){$accountInfo}"
+            ];
         });
 
         return response()->json(['items' => $formattedUsers]);
     })->name('members.search');
 
-    // AJAX Route to get category amounts for a selected member
-    Route::get('/get-member-category-amounts/{user}', function (User $user) {
-        if ($user->memberProfile && $user->memberProfile->memberCategory) {
-            return response()->json([
-                'monthly' => $user->memberProfile->memberCategory->monthly_contribution,
-                'social' => $user->memberProfile->memberCategory->social_monthly_contribution,
-            ]);
-        }
-        return response()->json(null, 404);
-    })->name('members.category-amounts');
+        // --- AJAX Route to get category amounts ---
+        Route::get('/get-member-category-amounts/{user}', function (User $user) {
+            if ($user->memberProfile && $user->memberProfile->memberCategory) {
+                return response()->json([
+                    'monthly' => $user->memberProfile->memberCategory->monthly_contribution,
+                    'social' => $user->memberProfile->memberCategory->social_monthly_contribution,
+                ]);
+            }
+            return response()->json(null, 404);
+        })->name('members.category-amounts');
         // Loan Management (Admin)
         Route::resource('loans', AdminLoanController::class);
 

@@ -35,11 +35,15 @@ class LoanController extends Controller
 
     public function create()
     {
-        $members = User::whereHas('memberProfile', fn($q) => $q->where('status', 'approved'))
-                       ->orderBy('name')->get();
-        // For preview on create form, pass an empty loan object
-        $loan = new Loan(); // For the accessor to work if you display it
-        return view('admin.loans.create', compact('members', 'loan'));
+        // $members = User::whereHas('memberProfile', fn($q) => $q->where('status', 'approved'))
+        //                ->orderBy('name')->get();
+        // // For preview on create form, pass an empty loan object
+        // $loan = new Loan(); // For the accessor to work if you display it
+        // return view('admin.loans.create', compact('members', 'loan'));
+         $loan = new Loan();
+        $selectedUserOption = null;
+
+        return view('admin.loans.create', compact('loan', 'selectedUserOption'));
     }
 
     public function store(Request $request)
@@ -84,10 +88,22 @@ class LoanController extends Controller
 
     public function edit(Loan $loan)
     {
-        $members = User::whereHas('memberProfile', fn($q) => $q->where('status', 'approved'))
-                       ->orderBy('name')->get();
-        $loan->load('user');
-        return view('admin.loans.edit', compact('loan', 'members'));
+        // $members = User::whereHas('memberProfile', fn($q) => $q->where('status', 'approved'))
+        //                ->orderBy('name')->get();
+        // $loan->load('user');
+        // return view('admin.loans.edit', compact('loan', 'members'));
+        $loan->load('user'); // Ensure the user relationship is loaded for the existing loan.
+
+        // Prepare the initial selected option for Tom Select
+        $selectedUserOption = null;
+        if ($loan->user) {
+            $selectedUserOption = [
+                'id' => $loan->user->id,
+                'text' => "{$loan->user->name} ({$loan->user->email})"
+            ];
+        }
+
+        return view('admin.loans.edit', compact('loan', 'selectedUserOption'));
     }
 
     public function update(Request $request, Loan $loan)

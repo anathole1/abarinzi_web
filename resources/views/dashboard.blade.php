@@ -42,7 +42,15 @@
 
                         {{-- Quick Actions / Management Links --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {{-- Member Management --}}
+                            {{-- Manage Offices & Leadership --}}
+                            <div class="p-6 bg-blue-50 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                                <h4 class="text-lg font-semibold text-blue-700 mb-3">Member Management</h4>
+                                <ul class="space-y-2 text-sm">
+                                    <li><a href="{{ route('admin.offices.index') }}" class="text-indigo-600 hover:text-indigo-800 hover:underline">- Manage Offices & Leadership</a></li>
+                                </ul>
+                            </div>
+                        
+                        {{-- Member Management --}}
                             <div class="p-6 bg-blue-50 rounded-lg shadow-md hover:shadow-lg transition-shadow">
                                 <h4 class="text-lg font-semibold text-blue-700 mb-3">Member Management</h4>
                                 <ul class="space-y-2 text-sm">

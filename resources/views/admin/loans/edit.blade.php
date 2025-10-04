@@ -8,7 +8,7 @@
                 @include('partials.flash-messages')
                 <form method="POST" action="{{ route('admin.loans.update', $loan) }}">
                     @method('PUT')
-                    @include('admin.loans._form', ['loan' => $loan, 'members' => $members])
+                    @include('admin.loans._form', ['loan' => $loan, 'selectedUserOption' => $selectedUserOption])
                 </form>
             </div>
         </div>
