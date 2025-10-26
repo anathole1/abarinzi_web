@@ -1,10 +1,35 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
-    {{-- ... head content ... --}}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    
+    <title>@yield('title', config('app.name', 'Welcome to Abarinzi Family'))</title>
+    <meta name="description" content="@yield('meta_description', 'Welcome to ' . config('app.name'))">
+    <meta name="author" content="Anathole Niyongana">
+
+    <!-- Favicon -->
+    <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
+
+    <!-- Fonts (example using Inter) -->
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
+
+    <!-- Vite Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <style> /* ... any specific styles from previous example if needed ... */ </style>
+
+    <!-- Optional: Tailwind or custom styles -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            color-scheme: light dark;
+        }
+    </style>
+
+    @stack('head') <!-- Allow other views to inject extra head content -->
 </head>
+
 <body class="font-sans antialiased bg-gray-100 text-gray-800">
     <div class="min-h-screen flex flex-col">
         <!-- Navigation -->
@@ -364,7 +389,7 @@
                                 value="{{ old('name') }}"
                                 required
                                 class="w-full px-4 py-3 border @error('name', 'contact_form') border-red-500 @else border-gray-300 @enderror rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="John Doe"
+                                placeholder="Mia Ishimwe"
                             />
                             @error('name', 'contact_form') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
@@ -380,7 +405,7 @@
                                 value="{{ old('email') }}"
                                 required
                                 class="w-full px-4 py-3 border @error('email', 'contact_form') border-red-500 @else border-gray-300 @enderror rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="john@example.com"
+                                placeholder="mia.ishimwe@abarinzi.org"
                             />
                              @error('email', 'contact_form') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
@@ -450,7 +475,7 @@
         <footer class="bg-blue-900 text-white">
             <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center">
                 <p>© {{ date('Y') }} Abarinzi Family. All rights reserved.</p>
-                <p class="text-sm mt-1">Designed with <span class="text-red-400">♥</span> for our Community</p>
+                <!-- <p class="text-sm mt-1">Designed with <span class="text-red-400">♥</span> for our Community</p> -->
             </div>
         </footer>
         @endif
@@ -459,5 +484,16 @@
     <script> /* ... from previous welcome.blade.php ... */ </script>
     {{-- Contact form submit button disabling script (if you kept it separate) --}}
     <script> /* ... from previous contact form answer ... */ </script>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuButton.addEventListener('click', function () {
+            mobileMenu.classList.toggle('hidden');
+        });
+    });
+</script>
 </body>
 </html>

@@ -23,14 +23,14 @@
                             {{-- First Name --}}
                             <div>
                                 <x-input-label for="first_name" :value="__('First Name')" />
-                                <x-text-input id="first_name" class="block mt-1 w-full" type="text" name="first_name" :value="old('first_name', Auth::user()->memberProfile->first_name ?? '')" required autofocus />
+                                <x-text-input id="first_name" class="block mt-1 w-full" type="text" name="first_name" :value="old('first_name', Auth::user()->memberProfile->first_name ?? $prefilledFirstName)" required autofocus />
                                 <x-input-error :messages="$errors->get('first_name')" class="mt-2" />
                             </div>
 
                             {{-- Last Name --}}
                             <div>
                                 <x-input-label for="last_name" :value="__('Last Name')" />
-                                <x-text-input id="last_name" class="block mt-1 w-full" type="text" name="last_name" :value="old('last_name', Auth::user()->memberProfile->last_name ?? '')" required />
+                                <x-text-input id="last_name" class="block mt-1 w-full" type="text" name="last_name" :value="old('last_name', Auth::user()->memberProfile->last_name ?? $prefilledLastName)" required />
                                 <x-input-error :messages="$errors->get('last_name')" class="mt-2" />
                             </div>
 

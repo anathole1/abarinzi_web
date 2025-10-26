@@ -1,248 +1,92 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request; // Keep for admin search route if still there
 
-// Public Page Controllers
+// --- CONTROLLER IMPORTS ---
 use App\Http\Controllers\PageController;
-use App\Http\Controllers\ContactController; // For form submission
-use App\Http\Controllers\NewsletterController; // If you have this
-
-// Authenticated User Controllers
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MemberProfileController;
-use App\Http\Controllers\Member\ContributionController as MemberContributionController; // Alias for clarity
-
-// Admin Area Controllers
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\Member\ContributionController as MemberContributionController;
+use App\Http\Controllers\Member\LoanApplicationController as MemberLoanApplicationController;
+use App\Http\Controllers\Member\LoanRepaymentController as MemberLoanRepaymentController;
+use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\MembershipController as AdminMembershipController;
+use App\Http\Controllers\Admin\ProfileUpdateController as AdminProfileUpdateController;
+use App\Http\Controllers\Admin\MemberCategoryController as AdminMemberCategoryController;
 use App\Http\Controllers\Admin\ContributionController as AdminContributionController;
 use App\Http\Controllers\Admin\LoanController as AdminLoanController;
+use App\Http\Controllers\Admin\LoanRepaymentController as AdminLoanRepaymentController;
+use App\Http\Controllers\Admin\OfficeController as AdminOfficeController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\RoleController as AdminRoleController;
 use App\Http\Controllers\Admin\PermissionController as AdminPermissionController;
-use App\Http\Controllers\Admin\MemberCategoryController as AdminMemberCategoryController;
-use App\Http\Controllers\Member\LoanApplicationController as MemberLoanApplicationController;
-use App\Http\Controllers\Member\LoanRepaymentController as MemberLoanRepaymentController;
-use App\Http\Controllers\Admin\LoanRepaymentController as AdminLoanRepaymentController;
-use App\Http\Controllers\Admin\ReportController;
-use App\Http\Controllers\Admin\OfficeController;
-
-// Content Management Admin Controllers
+use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\HeroSlideController;
 use App\Http\Controllers\Admin\AboutContentController;
 use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\CoreObjectiveItemController;
 use App\Http\Controllers\Admin\VisionItemController;
+use App\Http\Controllers\Admin\AjaxController as AdminAjaxController;
 
-//Notification
-use App\Http\Controllers\NotificationController;
-//update profile
-use App\Http\Controllers\Admin\ProfileUpdateController;
-use App\Models\User; // For admin search route closure if kept
-use Illuminate\Support\Facades\DB;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
+|
+| Organized by accessibility: Public, Authenticated, and Admin areas.
+| All logic is now handled by dedicated controllers.
+|
 */
 
-// Publicly Accessible Pages
-Route::get('/', [PageController::class, 'welcome'])->name('welcome'); // Changed from 'welcome' to 'home' for convention
+// --- 1. PUBLIC ROUTES ---
+Route::get('/', [PageController::class, 'welcome'])->name('welcome');
 Route::get('/about/our-work-and-vision', [PageController::class, 'aboutOurWorkAndVision'])->name('about.work-vision');
 Route::post('/contact-submit', [ContactController::class, 'submit'])->name('contact.submit');
-//Route::post('/newsletter-subscribe', [NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
 
 
-// Authenticated User Routes
+// --- 2. AUTHENTICATED USER ROUTES (Applies to ALL logged-in users) ---
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 
+    // Default Breeze Profile (Password, Delete Account)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Member Profile Completion
-    Route::get('/complete-profile', [MemberProfileController::class, 'create'])->name('member-profile.create');
-    Route::post('/member-profile', [MemberProfileController::class, 'store'])->name('member-profile.store');
+    // Routes specifically for users with the 'member' role
+    Route::middleware(['role:member'])->group(function () {
+        Route::get('/complete-profile', [MemberProfileController::class, 'create'])->name('member-profile.create');
+        Route::post('/member-profile', [MemberProfileController::class, 'store'])->name('member-profile.store');
 
-    // Notifications
-    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-
-    // Member-specific features (require approved profile)
-    Route::middleware(['ensure.profile.approved'])->group(function () {
-        Route::get('/contributions', [MemberContributionController::class, 'index'])->name('member.contributions.index');
-        Route::get('/contributions/create', [MemberContributionController::class, 'create'])->name('member.contributions.create');
-        Route::post('/contributions', [MemberContributionController::class, 'store'])->name('member.contributions.store');
-        Route::get('/contributions/{contribution}', [MemberContributionController::class, 'show'])
-            ->name('member.contributions.show')
-            ->middleware('can:view,contribution');
-        Route::resource('my-loans', MemberLoanApplicationController::class)
-        ->only(['index', 'create', 'store', 'show'])
-        ->names([ // Custom names to avoid conflict with admin loan routes if any
-            'index' => 'member.loans.index',
-            'create' => 'member.loans.create',
-            'store' => 'member.loans.store',
-            'show' => 'member.loans.show',
-        ]);
-        Route::get('my-loans/{loan}/repayments/create', [MemberLoanRepaymentController::class, 'create'])->name('member.loan_repayments.create');
-        Route::post('my-loans/{loan}/repayments', [MemberLoanRepaymentController::class, 'store'])->name('member.loan_repayments.store');
-
-         // Member Profile Update Routes
-        Route::get('/my-profile/edit', [MemberProfileController::class, 'edit'])->name('member-profile.edit');
-        Route::put('/my-profile/update', [MemberProfileController::class, 'update'])->name('member-profile.update');
+        // Routes for APPROVED members
+        Route::middleware(['ensure.profile.approved'])->group(function () {
+            Route::get('/my-profile/edit', [MemberProfileController::class, 'edit'])->name('member-profile.edit');
+            Route::put('/my-profile/update', [MemberProfileController::class, 'update'])->name('member-profile.update');
+            Route::resource('contributions', MemberContributionController::class)->only(['index', 'create', 'store', 'show'])->names('member.contributions');
+            Route::resource('my-loans', MemberLoanApplicationController::class)->only(['index', 'create', 'store', 'show'])->names('member.loans');
+            Route::get('my-loans/{loan}/repayments/create', [MemberLoanRepaymentController::class, 'create'])->name('member.loan_repayments.create');
+            Route::post('my-loans/{loan}/repayments', [MemberLoanRepaymentController::class, 'store'])->name('member.loan_repayments.store');
+        });
     });
 });
 
 
-// Admin Area Routes
-Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+// --- 3. ADMIN AREA ROUTES ---
+// This is the main "gatekeeper" for the entire /admin section.
+Route::middleware(['auth', 'verified', 'role:admin|approval|author'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
 
-    // Admin-Only Section (Role: admin)
-    Route::middleware(['role:admin'])->group(function() {
-        Route::get('/dashboard', function () { // Simple admin dashboard
-            // You can create an AdminDashboardController later if this gets complex
-            $viewData = [
-                'totalUsers' => User::count(),
-                'pendingMembershipsCount' => \App\Models\MemberProfile::where('status', 'pending')->count(),
-                // Add more admin specific stats
-            ];
-            return view('admin.dashboard', $viewData); // Assuming you have/create this view
-        })->name('dashboard');
+    // Main Admin Dashboard - Accessible to all roles in this group
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-        // User Management
-        Route::resource('users', AdminUserController::class);
-        Route::get('users/{user}/roles', [AdminUserController::class, 'showRoles'])->name('users.roles');
-        Route::post('users/{user}/roles', [AdminUserController::class, 'assignRoles'])->name('users.assignRoles');
-        // ... other user permission routes ...
-
-        // Role & Permission Management
-        Route::resource('roles', AdminRoleController::class);
-        Route::get('roles/{role}/permissions', [AdminRoleController::class, 'showPermissions'])->name('roles.permissions');
-        Route::post('roles/{role}/permissions', [AdminRoleController::class, 'assignPermissions'])->name('roles.assignPermissions');
-        Route::resource('permissions', AdminPermissionController::class)->only(['index', 'create', 'store', 'destroy']);
-
-        // Membership Management
-        Route::get('/memberships', [AdminMembershipController::class, 'index'])->name('memberships.index');
-        Route::get('/memberships/{memberProfile}', [AdminMembershipController::class, 'show'])->name('memberships.show');
-        Route::patch('/memberships/{memberProfile}/approve', [AdminMembershipController::class, 'approve'])->name('memberships.approve');
-        Route::patch('/memberships/{memberProfile}/reject', [AdminMembershipController::class, 'reject'])->name('memberships.reject');
-        Route::resource('member-categories', AdminMemberCategoryController::class)->except(['show']);
-
-
-        // Contribution Management (Admin)
-        Route::resource('contributions', AdminContributionController::class);
-        Route::patch('contributions/{contribution}/approve', [AdminContributionController::class, 'approve'])->name('contributions.approve');
-        Route::patch('contributions/{contribution}/reject', [AdminContributionController::class, 'reject'])->name('contributions.reject');
-
-        //profile approval
-        Route::get('profile-updates', [ProfileUpdateController::class, 'index'])->name('profile-updates.index');
-        Route::get('profile-updates/{profileUpdate}', [ProfileUpdateController::class, 'show'])->name('profile-updates.show');
-        Route::patch('profile-updates/{profileUpdate}/approve', [ProfileUpdateController::class, 'approve'])->name('profile-updates.approve');
-        Route::patch('profile-updates/{profileUpdate}/reject', [ProfileUpdateController::class, 'reject'])->name('profile-updates.reject');
-
-        //positions
-        Route::resource('offices', OfficeController::class);
-        //search members
-        Route::get('/search-members', function (Request $request) {
-        $searchTerm = $request->input('q');
-
-        if (!$searchTerm) {
-            return response()->json(['items' => []]);
-        }
-
-        $query = User::query()
-            ->with('memberProfile') // Eager load for efficiency and display
-            // IMPORTANT: Only search for users who have a COMPLETED and APPROVED profile
-            ->whereHas('memberProfile', function ($q) {
-                $q->where('status', 'approved');
-            })
-            ->orderBy('name');
-
-        // Search across multiple fields in both `users` and `member_profiles` tables
-        $query->where(function ($q) use ($searchTerm) {
-            $q->where('name', 'LIKE', "%{$searchTerm}%") // Search user's login name
-              ->orWhere('email', 'LIKE', "%{$searchTerm}%") // Search user's login email
-
-              // Also search within the related member_profile
-              ->orWhereHas('memberProfile', function ($mpQuery) use ($searchTerm) {
-                  $mpQuery->where('first_name', 'LIKE', "%{$searchTerm}%")
-                          ->orWhere('last_name', 'LIKE', "%{$searchTerm}%")
-                          ->orWhere('email', 'LIKE', "%{$searchTerm}%") // <-- SEARCH PROFILE EMAIL
-                          ->orWhere('accountNo', 'LIKE', "%{$searchTerm}%")
-                          ->orWhere('phone_number', 'LIKE', "%{$searchTerm}%")
-                          ->orWhere('national_id', 'LIKE', "%{$searchTerm}%")
-                          // Search concatenated full name
-                          ->orWhere(DB::raw("CONCAT(first_name, ' ', last_name)"), 'LIKE', "%{$searchTerm}%");
-              });
-        });
-
-        $users = $query->limit(20)->get();
-
-        // Format for Tom Select
-        $formattedUsers = $users->map(function ($user) {
-            $accountInfo = $user->memberProfile->accountNo ? " | Acc: " . $user->memberProfile->accountNo : "";
-            // Display the user's main login name but also their profile email for clarity if different
-            $emailDisplay = $user->email;
-            if ($user->memberProfile->email && $user->memberProfile->email !== $user->email) {
-                $emailDisplay .= " (Profile: {$user->memberProfile->email})";
-            }
-            return [
-                'id' => $user->id,
-                'text' => "{$user->name} ({$emailDisplay}){$accountInfo}"
-            ];
-        });
-
-        return response()->json(['items' => $formattedUsers]);
-    })->name('members.search');
-
-        // --- AJAX Route to get category amounts ---
-        Route::get('/get-member-category-amounts/{user}', function (User $user) {
-            if ($user->memberProfile && $user->memberProfile->memberCategory) {
-                return response()->json([
-                    'monthly' => $user->memberProfile->memberCategory->monthly_contribution,
-                    'social' => $user->memberProfile->memberCategory->social_monthly_contribution,
-                ]);
-            }
-            return response()->json(null, 404);
-        })->name('members.category-amounts');
-        // Loan Management (Admin)
-        Route::resource('loans', AdminLoanController::class);
-
-        // AJAX Search Routes (Admin)
-        Route::get('/search-members', function (Request $request) { /* ... your search closure ... */ })->name('members.search'); // Consider moving to a controller
-        Route::get('/get-member-category-amounts/{user}', function (User $user) { /* ... your category amounts closure ... */ })->name('members.category-amounts'); // Consider moving
-
-        Route::get('loan-repayments', [AdminLoanRepaymentController::class, 'index'])->name('loan-repayments.index');
-        Route::get('loan-repayments/{loanRepayment}', [AdminLoanRepaymentController::class, 'show'])->name('loan-repayments.show');
-        Route::patch('loan-repayments/{loanRepayment}/confirm', [AdminLoanRepaymentController::class, 'confirm'])->name('loan-repayments.confirm');
-        Route::patch('loan-repayments/{loanRepayment}/fail', [AdminLoanRepaymentController::class, 'fail'])->name('loan-repayments.fail');
-        // Optional: Routes for admin to edit/delete repayment records
-        // Route::get('loan-repayments/{loanRepayment}/edit', [AdminLoanRepaymentController::class, 'edit'])->name('loan-repayments.edit');
-        // Route::put('loan-repayments/{loanRepayment}', [AdminLoanRepaymentController::class, 'update'])->name('loan-repayments.update');
-        // Route::delete('loan-repayments/{loanRepayment}', [AdminLoanRepaymentController::class, 'destroy'])->name('loan-repayments.destroy');
-
-        Route::get('/reports/members', [ReportController::class, 'membersReport'])->name('reports.members');
-        Route::get('/reports/members/pdf', [ReportController::class, 'exportMembersPdf'])->name('reports.members.pdf'); // New
-        Route::get('/reports/members/excel', [ReportController::class, 'exportMembersExcel'])->name('reports.members.excel'); // New
-    
-        // -- ADD THESE ROUTES FOR CONTRIBUTIONS --
-        Route::get('/reports/contributions', [ReportController::class, 'contributionsReport'])->name('reports.contributions');
-        Route::get('/reports/contributions/pdf', [ReportController::class, 'exportContributionsPdf'])->name('reports.contributions.pdf');
-        Route::get('/reports/contributions/excel', [ReportController::class, 'exportContributionsExcel'])->name('reports.contributions.excel');
-        // -- END OF NEW CONTRIBUTION ROUTES --
-
-        // -- ADD THESE ROUTES FOR LOANS --
-        Route::get('/reports/loans', [ReportController::class, 'loansReport'])->name('reports.loans');
-        Route::get('/reports/loans/pdf', [ReportController::class, 'exportLoansPdf'])->name('reports.loans.pdf');
-        Route::get('/reports/loans/excel', [ReportController::class, 'exportLoansExcel'])->name('reports.loans.excel');
-        // -- END OF NEW LOAN ROUTES --
-        
-            });
-
-
-    // Content Management Section (Role: admin OR author)
-    Route::middleware(['role:admin|author'])->prefix('content')->name('content.')->group(function () {
+    // -- Content Management (Author & Admin) --
+    Route::middleware(['permission:manage website content'])->prefix('content')->name('content.')->group(function () {
         Route::resource('hero-slides', HeroSlideController::class);
         Route::get('about-main/edit', [AboutContentController::class, 'edit'])->name('about.edit');
         Route::put('about-main/update', [AboutContentController::class, 'update'])->name('about.update');
@@ -253,8 +97,51 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         Route::patch('contact-messages/{contactMessage}/toggle-read', [ContactMessageController::class, 'toggleRead'])->name('contacts.toggleRead');
         Route::delete('contact-messages/{contactMessage}', [ContactMessageController::class, 'destroy'])->name('contacts.destroy')->middleware('permission:delete contact messages');
     });
-});
 
+    // -- Approval & Financial Tasks (Approval & Admin) --
+    Route::middleware(['permission:approve memberships|approve contributions|approve loans|confirm loan repayments'])->group(function() {
+        Route::get('/memberships', [AdminMembershipController::class, 'index'])->name('memberships.index');
+        Route::get('/memberships/{memberProfile}', [AdminMembershipController::class, 'show'])->name('memberships.show');
+        Route::patch('/memberships/{memberProfile}/approve', [AdminMembershipController::class, 'approve'])->name('memberships.approve');
+        Route::patch('/memberships/{memberProfile}/reject', [AdminMembershipController::class, 'reject'])->name('memberships.reject');
+        Route::get('profile-updates', [AdminProfileUpdateController::class, 'index'])->name('profile-updates.index');
+        Route::get('profile-updates/{profileUpdate}', [AdminProfileUpdateController::class, 'show'])->name('profile-updates.show');
+        Route::patch('profile-updates/{profileUpdate}/approve', [AdminProfileUpdateController::class, 'approve'])->name('profile-updates.approve');
+        Route::patch('profile-updates/{profileUpdate}/reject', [AdminProfileUpdateController::class, 'reject'])->name('profile-updates.reject');
+        Route::resource('contributions', AdminContributionController::class);
+        Route::resource('loans', AdminLoanController::class);
+        Route::get('loan-repayments', [AdminLoanRepaymentController::class, 'index'])->name('loan-repayments.index');
+        Route::get('loan-repayments/{loanRepayment}', [AdminLoanRepaymentController::class, 'show'])->name('loan-repayments.show');
+        Route::patch('loan-repayments/{loanRepayment}/confirm', [AdminLoanRepaymentController::class, 'confirm'])->name('loan-repayments.confirm');
+        Route::patch('loan-repayments/{loanRepayment}/fail', [AdminLoanRepaymentController::class, 'fail'])->name('loan-repayments.fail');
+    });
+
+    // -- Full Admin-Only Tasks (System Settings, Users, Reports) --
+    Route::middleware(['permission:manage roles and permissions'])->group(function() {
+        Route::resource('users', AdminUserController::class);
+        Route::get('users/{user}/roles', [AdminUserController::class, 'showRoles'])->name('users.roles');
+        Route::post('users/{user}/roles', [AdminUserController::class, 'assignRoles'])->name('users.assignRoles');
+        Route::resource('roles', AdminRoleController::class);
+        Route::get('roles/{role}/permissions', [AdminRoleController::class, 'showPermissions'])->name('roles.permissions');
+        Route::post('roles/{role}/permissions', [AdminRoleController::class, 'assignPermissions'])->name('roles.assignPermissions');
+        Route::resource('permissions', AdminPermissionController::class)->only(['index', 'create', 'store', 'destroy']);
+        Route::resource('member-categories', AdminMemberCategoryController::class)->except(['show']);
+        Route::resource('offices', AdminOfficeController::class);
+        Route::get('/reports/members', [AdminReportController::class, 'membersReport'])->name('reports.members');
+        Route::get('/reports/members/pdf', [AdminReportController::class, 'exportMembersPdf'])->name('reports.members.pdf');
+        Route::get('/reports/members/excel', [AdminReportController::class, 'exportMembersExcel'])->name('reports.members.excel');
+        Route::get('/reports/contributions', [AdminReportController::class, 'contributionsReport'])->name('reports.contributions');
+        Route::get('/reports/contributions/pdf', [AdminReportController::class, 'exportContributionsPdf'])->name('reports.contributions.pdf');
+        Route::get('/reports/contributions/excel', [AdminReportController::class, 'exportContributionsExcel'])->name('reports.contributions.excel');
+        Route::get('/reports/loans', [AdminReportController::class, 'loansReport'])->name('reports.loans');
+        Route::get('/reports/loans/pdf', [AdminReportController::class, 'exportLoansPdf'])->name('reports.loans.pdf');
+        Route::get('/reports/loans/excel', [AdminReportController::class, 'exportLoansExcel'])->name('reports.loans.excel');
+    });
+
+    // -- AJAX Routes (accessible by any role in the main admin group) --
+    Route::get('/search-members', [AdminAjaxController::class, 'searchMembers'])->name('members.search');
+    Route::get('/get-member-category-amounts/{user}', [AdminAjaxController::class, 'getMemberCategoryAmounts'])->name('members.category-amounts');
+});
 
 // Breeze Auth Routes
 require __DIR__.'/auth.php';

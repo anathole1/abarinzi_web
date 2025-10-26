@@ -24,10 +24,15 @@ class MemberProfileController extends Controller
         }
 
         $membershipCategories = MemberCategory::where('is_active', true)->orderBy('name')->get();
+        
+        $nameParts = explode(' ', $user->name, 2); // Split into a maximum of 2 parts
+        $prefilledFirstName = $nameParts[0];
+        $prefilledLastName = $nameParts[1] ?? ''; 
         // Pre-fill email from user account
         $prefilledEmail = $user->email;
 
-        return view('member-profile.create', compact('membershipCategories', 'prefilledEmail'));
+        return view('member-profile.create', compact('membershipCategories', 'prefilledEmail','prefilledFirstName', // Pass to view
+            'prefilledLastName'));
     }
 
     public function store(Request $request)

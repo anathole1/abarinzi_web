@@ -44,24 +44,24 @@
 
     {{-- Navigation Buttons --}}
     @if(count($slides) > 1)
-    <button
-      type="button"
-      class="slideshow-prev absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full transition-colors duration-200 z-20"
-      aria-label="Previous slide"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-      </svg>
-    </button>
-    <button
-      type="button"
-      class="slideshow-next absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full transition-colors duration-200 z-20"
-      aria-label="Next slide"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-      </svg>
-    </button>
+    <!--<button-->
+    <!--  type="button"-->
+    <!--  class="slideshow-prev absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full transition-colors duration-200 z-20"-->
+    <!--  aria-label="Previous slide"-->
+    <!-->-->
+    <!--  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">-->
+    <!--    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />-->
+    <!--  </svg>-->
+    <!--</button>-->
+    <!--<button-->
+    <!--  type="button"-->
+    <!--  class="slideshow-next absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full transition-colors duration-200 z-20"-->
+    <!--  aria-label="Next slide"-->
+    <!-->-->
+    <!--  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">-->
+    <!--    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />-->
+    <!--  </svg>-->
+    <!--</button>-->
 
     {{-- Dots Navigation --}}
     <div class="slideshow-dots absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
