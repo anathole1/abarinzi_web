@@ -109,6 +109,8 @@ Route::middleware(['auth', 'verified', 'role:admin|approval|author'])
         Route::patch('profile-updates/{profileUpdate}/approve', [AdminProfileUpdateController::class, 'approve'])->name('profile-updates.approve');
         Route::patch('profile-updates/{profileUpdate}/reject', [AdminProfileUpdateController::class, 'reject'])->name('profile-updates.reject');
         Route::resource('contributions', AdminContributionController::class);
+        Route::patch('contributions/{contribution}/approve', [AdminContributionController::class, 'approve'])->name('contributions.approve');
+        Route::patch('contributions/{contribution}/reject', [AdminContributionController::class, 'reject'])->name('contributions.reject');
         Route::resource('loans', AdminLoanController::class);
         Route::get('loan-repayments', [AdminLoanRepaymentController::class, 'index'])->name('loan-repayments.index');
         Route::get('loan-repayments/{loanRepayment}', [AdminLoanRepaymentController::class, 'show'])->name('loan-repayments.show');
